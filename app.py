@@ -8,7 +8,6 @@ from IPython.display import clear_output
 import dotenv
 
 from pymongo import MongoClient
-import certifi
 
 dotenv.load_dotenv(override=True)
 
@@ -17,11 +16,8 @@ MONGO_DB_URI = os.getenv("MONGO_DB_URI")
 
 clear_output()
 
-ca = certifi.where()
-
 client = MongoClient(
-    MONGO_DB_URI,
-    tlsCAFile=ca,
+    MONGO_DB_URI
 )
 db = client.mycinema
 coll = db.movies
@@ -182,4 +178,4 @@ app.layout = dbc.Container(
 )
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
