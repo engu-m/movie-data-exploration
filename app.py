@@ -28,6 +28,7 @@ coll = db.movies
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.CERULEAN])
 
+server = app.server
 
 dtable = dash_table.DataTable(
     sort_action="native",
@@ -181,4 +182,4 @@ app.layout = dbc.Container(
 )
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
