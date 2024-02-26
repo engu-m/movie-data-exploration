@@ -34,8 +34,8 @@ dtable = dash_table.DataTable(
 
 loading_table = dcc.Loading(type="default", children=dtable)
 
-histogram = dcc.Graph()
-loading_histogram = dcc.Loading(type="default", children=histogram)
+scatterplot = dcc.Graph()
+loading_scatterplot = dcc.Loading(type="default", children=scatterplot)
 
 
 default_values = {
@@ -47,7 +47,7 @@ default_values = {
 }
 
 vote_count_slider = dcc.Slider(
-    min=1,
+    min=0,
     max=1000,
     step=5,
     value=default_values["min_vote_count"],
@@ -74,7 +74,7 @@ runtime_slider = dcc.RangeSlider(
 
 
 @callback(
-    Output(histogram, component_property="figure"),
+    Output(scatterplot, component_property="figure"),
     Output(dtable, component_property="data"),
     Input(vote_count_slider, "value"),
     Input(vote_average_slider, "value"),
@@ -102,9 +102,8 @@ def update_table_and_graph(min_vote_count, vote_averages, runtimes):
         "vote_count": {"$gte": min_vote_count},
         "vote_average": {"$gte": min_vote_average, "$lte": max_vote_average},
     }
-    query_result = collection.find(query)
+    query_result = collection.find(query, {"_id": 0})
     movie_data_sampled = pd.DataFrame(list(query_result))
-    movie_data_sampled.drop("_id", axis=1, inplace=True)
     movie_data_sampled = movie_data_sampled.astype({"genres": str, "production_countries": str})
 
     fig = px.scatter(
@@ -120,8 +119,8 @@ def update_table_and_graph(min_vote_count, vote_averages, runtimes):
             # "popularity" : True,
             "runtime": True,
             "vote_average": True,
-            "vote_count": True,
-            "genres": True,
+            # "vote_count": True,
+            # "genres": True,
             # "production_countries" : True,
             # "spoken_languages" : True,
             # "tmdb_id" : True,
@@ -174,7 +173,7 @@ app.layout = dbc.Container(
                     width=6,
                 ),
                 dbc.Col(
-                    [loading_histogram],
+                    [loading_scatterplot],
                     width=6,
                 ),
             ],
