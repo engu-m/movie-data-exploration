@@ -16,9 +16,7 @@ MONGO_DB_URI = os.getenv("MONGO_DB_URI")
 
 clear_output()
 
-client = MongoClient(
-    MONGO_DB_URI
-)
+client = MongoClient(MONGO_DB_URI)
 db = client.mycinema
 coll = db.movies
 
@@ -61,21 +59,6 @@ runtime_slider = dcc.RangeSlider(
     value=[60, 280],
     step=10,
     marks={int(i): f"{i:.0f}" for i in np.linspace(0, 500, 21)},
-    tooltip={"placement": "bottom"},
-)
-
-size_slider = dcc.Slider(
-    min=0,
-    max=10,
-    step=1,
-    value=1,
-    tooltip={"placement": "bottom"},
-)
-max_size_slider = dcc.Slider(
-    min=0,
-    max=50,
-    step=1,
-    value=1,
     tooltip={"placement": "bottom"},
 )
 
