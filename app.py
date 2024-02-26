@@ -19,6 +19,7 @@ clear_output()
 client = MongoClient(MONGO_DB_URI)
 db = client.mycinema
 coll = db.movies
+reduced_coll = db.reduced_movies
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.CERULEAN])
 
@@ -36,11 +37,20 @@ loading_table = dcc.Loading(type="default", children=dtable)
 histogram = dcc.Graph()
 loading_histogram = dcc.Loading(type="default", children=histogram)
 
+
+default_values = {
+    "min_vote_count": 50,
+    "min_vote_average": 0,
+    "max_vote_average": 10,
+    "min_runtime": 60,
+    "max_runtime": 280,
+}
+
 vote_count_slider = dcc.Slider(
     min=1,
     max=1000,
     step=5,
-    value=50,
+    value=default_values["min_vote_count"],
     marks={1: "1", 1000: "1000"},
     tooltip={"placement": "bottom", "always_visible": True},
 )
@@ -49,14 +59,14 @@ vote_average_slider = dcc.RangeSlider(
     min=0,
     max=10,
     step=0.1,
-    value=[0, 10],
+    value=[default_values["min_vote_average"], default_values["max_vote_average"]],
     marks={i: str(i) for i in range(11)},
     # dots=True,
     tooltip={"placement": "bottom"},
 )
 
 runtime_slider = dcc.RangeSlider(
-    value=[60, 280],
+    value=[default_values["min_runtime"], default_values["max_runtime"]],
     step=10,
     marks={int(i): f"{i:.0f}" for i in np.linspace(0, 500, 21)},
     tooltip={"placement": "bottom"},
@@ -74,12 +84,25 @@ def update_table_and_graph(min_vote_count, vote_averages, runtimes):
     min_vote_average, max_vote_average = vote_averages
     min_runtime, max_runtime = runtimes
 
+    if (
+        (min_runtime >= default_values["min_runtime"])
+        and (max_runtime <= default_values["max_runtime"])
+        and (min_vote_count >= default_values["min_vote_count"])
+        and (min_vote_average >= default_values["min_vote_average"])
+        and (max_vote_average <= default_values["max_vote_average"])
+    ):
+        # use stored view to reduce computation costs
+        collection = reduced_coll
+    else:
+        # use full database instead. Slower
+        collection = coll
+
     query = {
         "runtime": {"$gte": min_runtime, "$lte": max_runtime},
         "vote_count": {"$gte": min_vote_count},
         "vote_average": {"$gte": min_vote_average, "$lte": max_vote_average},
     }
-    query_result = coll.find(query)
+    query_result = collection.find(query)
     movie_data_sampled = pd.DataFrame(list(query_result))
     movie_data_sampled.drop("_id", axis=1, inplace=True)
     movie_data_sampled = movie_data_sampled.astype({"genres": str, "production_countries": str})
