@@ -6,24 +6,28 @@ import plotly.express as px
 import dash_bootstrap_components as dbc
 from IPython.display import clear_output
 import dotenv
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from pymongo import MongoClient
 
 dotenv.load_dotenv(override=True)
 
 MONGO_DB_URI = os.getenv("MONGO_DB_URI")
+ADAPTABLE_TRUST_PROXY_DEPTH = os.getenv("ADAPTABLE_TRUST_PROXY_DEPTH", "0")
 
 
 clear_output()
 
-client = MongoClient(MONGO_DB_URI)
+client = MongoClient(MONGO_DB_URI, tls=True)
 db = client.mycinema
 coll = db.movies
 reduced_coll = db.reduced_movies
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.CERULEAN])
-
 server = app.server
+
+# trust proxies behind which the deployed app is hiding
+server.wsgi_app = ProxyFix(server.wsgi_app, x_for=1 + int(ADAPTABLE_TRUST_PROXY_DEPTH))
 
 app.title = "Movie data explorer"  # Webpage title
 
