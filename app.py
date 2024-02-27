@@ -35,7 +35,7 @@ app.title = "Movie data explorer"  # Webpage title
 
 dtable = dash_table.DataTable(
     sort_action="native",
-    page_size=10,
+    page_size=20,
     style_table={"overflowX": "auto"},
     style_cell={"font-family": "sans-serif"},
 )
@@ -71,7 +71,6 @@ vote_average_slider = dcc.RangeSlider(
     step=0.1,
     value=[default_values["min_vote_average"], default_values["max_vote_average"]],
     marks={i: str(i) for i in range(11)},
-    # dots=True,
     tooltip={"placement": "bottom"},
 )
 
@@ -150,7 +149,8 @@ def update_table_and_graph(min_vote_count, vote_averages, runtimes):
             "vote_average": True,
             "vote_average_jitter": False,
         },
-        size_max=10,
+        size_max=12,
+        height=600,
     )
     fig.update_layout(xaxis_title="Runtime (in minutes)", yaxis_title="Vote average")
     return fig, query_result_list
@@ -193,18 +193,11 @@ app.layout = dbc.Container(
             ],
             className="p-3 m-3 bg-light rounded-3",
         ),
-        dbc.Row(
-            [
-                dbc.Col(
-                    [loading_table],
-                    width=6,
-                ),
-                dbc.Col(
-                    [loading_scatterplot],
-                    width=6,
-                ),
-            ],
-        ),
+        dbc.Row(loading_scatterplot),
+        dbc.Row(loading_table),
+        html.Br(),
+        html.Hr(),
+        html.Footer(children="Powered with Dash and Adaptable", style={"text-align": "right"}),
     ],
     fluid=True,
 )
