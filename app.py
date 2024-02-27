@@ -126,32 +126,30 @@ def update_table_and_graph(min_vote_count, vote_averages, runtimes):
         "vote_count": {"$gte": min_vote_count},
         "vote_average": {"$gte": min_vote_average, "$lte": max_vote_average},
     }
-    query_result = collection.find(query, {"_id": 0})
-    movie_data_sampled = pd.DataFrame(list(query_result))
-    movie_data_sampled = movie_data_sampled.astype({"genres": str, "production_countries": str})
+    # add some jitter for scatterplot viz
+    movie_data_sampled["vote_average_jitter"] = movie_data_sampled[
+        "vote_average"
+    ] + 0.02 * np.random.randn(len(movie_data_sampled))
+    movie_data_sampled["runtime_jitter"] = movie_data_sampled["runtime"] + 0.3 * np.random.randn(
+        len(movie_data_sampled)
+    )
 
     fig = px.scatter(
         movie_data_sampled,
-        x="runtime",
-        y="vote_average",
+        x="runtime_jitter",
+        y="vote_average_jitter",
         hover_name="movie_title",
         hover_data={
-            # "image_url" : True,
-            # "movie_id" : True,
             "movie_title": True,
             "year_released": True,
-            # "popularity" : True,
             "runtime": True,
+            "runtime_jitter": False,
             "vote_average": True,
-            # "vote_count": True,
-            # "genres": True,
-            # "production_countries" : True,
-            # "spoken_languages" : True,
-            # "tmdb_id" : True,
+            "vote_average_jitter": False,
         },
         size_max=10,
     )
-    return fig, movie_data_sampled.to_dict("records")
+    fig.update_layout(xaxis_title="Runtime (in minutes)", yaxis_title="Vote average")
 
 
 app.layout = dbc.Container(
