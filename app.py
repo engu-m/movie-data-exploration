@@ -7,6 +7,8 @@ import dash_bootstrap_components as dbc
 from IPython.display import clear_output
 import dotenv
 from werkzeug.middleware.proxy_fix import ProxyFix
+from collections import OrderedDict
+
 
 from pymongo import MongoClient
 
@@ -44,13 +46,15 @@ scatterplot = dcc.Graph()
 loading_scatterplot = dcc.Loading(type="default", children=scatterplot)
 
 
-default_values = {
-    "min_vote_count": 50,
-    "min_vote_average": 0,
-    "max_vote_average": 10,
-    "min_runtime": 60,
-    "max_runtime": 280,
-}
+default_values = OrderedDict(
+    {
+        "min_vote_count": 50,
+        "min_vote_average": 0,
+        "max_vote_average": 10,
+        "min_runtime": 60,
+        "max_runtime": 280,
+    }
+)
 
 vote_count_slider = dcc.Slider(
     min=0,
@@ -77,6 +81,20 @@ runtime_slider = dcc.RangeSlider(
     marks={int(i): f"{i:.0f}" for i in np.linspace(0, 500, 21)},
     tooltip={"placement": "bottom"},
 )
+
+reset_sliders_button = dbc.Button(children="Reset")
+
+
+@callback(
+    Output(vote_count_slider, "value"),
+    Output(vote_average_slider, "value"),
+    Output(runtime_slider, "value"),
+    Input(reset_sliders_button, "n_clicks"),
+    prevent_initial_call=True,
+)
+def reset_filters(_):
+    a, b, c, d, e = default_values.values()
+    return a, [b, c], [d, e]
 
 
 @callback(
@@ -169,6 +187,7 @@ app.layout = dbc.Container(
                         html.Br(),
                     ]
                 ),
+                reset_sliders_button,
             ],
             className="p-3 m-3 bg-light rounded-3",
         ),
