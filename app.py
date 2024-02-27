@@ -126,6 +126,9 @@ def update_table_and_graph(min_vote_count, vote_averages, runtimes):
         "vote_count": {"$gte": min_vote_count},
         "vote_average": {"$gte": min_vote_average, "$lte": max_vote_average},
     }
+    query_result = collection.find(query, {"_id": 0, "genres": 0, "production_countries": 0})
+    query_result_list = list(query_result)
+    movie_data_sampled = pd.DataFrame(query_result_list)
     # add some jitter for scatterplot viz
     movie_data_sampled["vote_average_jitter"] = movie_data_sampled[
         "vote_average"
@@ -150,6 +153,7 @@ def update_table_and_graph(min_vote_count, vote_averages, runtimes):
         size_max=10,
     )
     fig.update_layout(xaxis_title="Runtime (in minutes)", yaxis_title="Vote average")
+    return fig, query_result_list
 
 
 app.layout = dbc.Container(
