@@ -25,6 +25,8 @@ app = Dash(__name__, external_stylesheets=[dbc.themes.CERULEAN])
 
 server = app.server
 
+app.title = "Movie data explorer"  # Webpage title
+
 dtable = dash_table.DataTable(
     sort_action="native",
     page_size=10,
